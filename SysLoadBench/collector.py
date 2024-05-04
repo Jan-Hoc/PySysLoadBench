@@ -53,7 +53,7 @@ class Collector:
 		self.__ram_queue = None
 		self.__ram_data.append(ram_data)
 
-	def statistics(self):
+	def statistics(self) -> tuple:
 		"""returns the CPU and RAM statistics in a tuple 
 		the statistics themselves are in dicts containing the keys
 		- max: maximum
@@ -71,24 +71,22 @@ class Collector:
 
 		cpu_data = np.array([x for iteration in self.__cpu_data for x in iteration])
 		cpu_stats['max'] = np.max(cpu_data)
-		cpu_stats['mean'] = np.mean(cpu_data)
-		cpu_stats['stddev'] = np.std(cpu_data)
+		cpu_stats['mean'] = round(np.mean(cpu_data), 2)
+		cpu_stats['stddev'] = round(np.std(cpu_data), 2)
 		for p in percentiles:
-			cpu_stats[str(p)] = np.percentile(cpu_data, p)
+			cpu_stats[str(p)] = round(np.percentile(cpu_data, p), 2)
 
 		ram_data = np.array([x for iteration in self.__ram_data for x in iteration])
 		ram_stats['max'] = np.max(ram_data)
-		ram_stats['mean'] = np.mean(ram_data)
-		ram_stats['stddev'] = np.std(ram_data)
+		ram_stats['mean'] = round(np.mean(ram_data), 2)
+		ram_stats['stddev'] = round(np.std(ram_data), 2)
 		for p in percentiles:
-			ram_stats[str(p)] = np.percentile(ram_data, p)
+			ram_stats[str(p)] = round(np.percentile(ram_data, p), 2)
 
 		return (cpu_stats, ram_stats)
 
-	def __gather_data(self, pid):
+	def __gather_data(self, pid) -> None:
 		# collect RAM and CPU data and pass to parent process
-		print(pid)
-		print(os.getpid())
 		process = psutil.Process(pid)
 		while self.__running.value:
 			self.__cpu_queue.put(process.cpu_percent(self.__measuring_interval))
