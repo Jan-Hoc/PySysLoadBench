@@ -61,9 +61,9 @@ class Benchmark:
 
         # run actuall benchmark
         for _ in range(rounds):
+            if prerun is not None:
+                prerun(**kwargs)
             with collector:
-                if prerun is not None:
-                    prerun(**kwargs)
                 benchmark(**kwargs)
         
         self.__results[name] = collector.statistics()
