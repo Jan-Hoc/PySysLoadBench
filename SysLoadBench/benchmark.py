@@ -16,7 +16,7 @@ class Benchmark:
 
 	Methods
 	-------
-	benchmark(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, **kwargs):
+	benchmark(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=False, **kwargs):
 		runs benchmarks for function benchmark. Calls setup function once in beginning and prerun before every run of benchmark.
 		Runs warmup_rounds rounds for warmup, which are not measured and then measures for rounds rounds
 		Prints results to terminal
@@ -31,7 +31,7 @@ class Benchmark:
 	def __init__(self):
 		self.__results = {}
 
-	def run_benchmark(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, **kwargs) -> None:
+	def run_benchmark(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=False, **kwargs) -> None:
 		"""runs benchmarks for given function benchmark
 
 		Args:
@@ -41,6 +41,8 @@ class Benchmark:
 			prerun (Callable | None, optional): setup function which is run once before every run of benchmark. Defaults to None.
 			rounds (int, optional): Amount of times benchmark should be called to measure for statistic. Defaults to 1.
 			warmup_rounds (int, optional): amount of untracked warmup rounds for benchmark. Defaults to 0.
+			gc_active(bool, optional): enable or disable garbage collection during benchmark. 
+				Activating gives more "real world" results, while deactivating gives more reproducable results
 
 		Raises:
 			DuplicateBenchmark: if benchmark with name was already called
@@ -67,13 +69,21 @@ class Benchmark:
 		for i in range(rounds):
 			if prerun is not None:
 				prerun(**kwargs)
+
+			# do garbage collection before every run for consistency
 			gc.collect()
-			gc.disable()
+			# disable garbage collection if set to do so
+			if not gc_active:
+				gc.disable()
+
 			with collector:
 				start = time.process_time()
 				benchmark(**kwargs)
 				times[i] = time.process_time() - start
-			gc.enable()
+
+			# enable gc after run to return back to normal for prerun function of next round
+			if not gc_active:
+				gc.enable()
 
 		collector_stats = collector.statistics()
 		time_stats = Evaluator.calculate_statistics(times, [25, 50, 75, 90, 95, 99], 4)
