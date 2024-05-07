@@ -2,6 +2,7 @@ import multiprocessing as mp
 import numpy as np
 import psutil
 import os
+from evaluator import Evaluator
 
 class Collector:
 	""" collects benchmarking data for code executed in "with" blocks
@@ -14,12 +15,12 @@ class Collector:
 	Methods
     -------
     statistics(self):
-        returns the CPU and RAM statistics in a tuple 
+        returns the CPU and RAM statistics in a tuple (rounded to two decimal points) 
 		the statistics themselves are in dicts containing the keys
 		- max: maximum
 		- mean: mean
 		- stddev: standard deviation
-		- x: x percentile for x in [25, 50, 75, 90, 95, 99]
+		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99]
 	"""
 
 	def __init__(self):
@@ -54,34 +55,23 @@ class Collector:
 		self.__ram_data.append(ram_data)
 
 	def statistics(self) -> tuple:
-		"""returns the CPU and RAM statistics in a tuple 
+		"""returns the CPU and RAM statistics in a tuple (rounded to two decimal points)
 		the statistics themselves are in dicts containing the keys
 		- max: maximum
 		- mean: mean
 		- stddev: standard deviation
-		- x: x percentile for x in [25, 50, 75, 90, 95, 99]
+		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99]
 
 		Returns:
 			(dict, dict): tuple containing (cpu_stats, ram_stats), which are dicts with the above keys
 		"""
 		percentiles = [25, 50, 75, 90, 95, 99]
 
-		cpu_stats = {}
-		ram_stats = {}
-
 		cpu_data = np.array([x for iteration in self.__cpu_data for x in iteration])
-		cpu_stats['max'] = np.max(cpu_data)
-		cpu_stats['mean'] = round(np.mean(cpu_data), 2)
-		cpu_stats['stddev'] = round(np.std(cpu_data), 2)
-		for p in percentiles:
-			cpu_stats[str(p)] = round(np.percentile(cpu_data, p), 2)
+		cpu_stats = Evaluator.calculate_statistics(cpu_data, percentiles, 2)
 
 		ram_data = np.array([x for iteration in self.__ram_data for x in iteration])
-		ram_stats['max'] = np.max(ram_data)
-		ram_stats['mean'] = round(np.mean(ram_data), 2)
-		ram_stats['stddev'] = round(np.std(ram_data), 2)
-		for p in percentiles:
-			ram_stats[str(p)] = round(np.percentile(ram_data, p), 2)
+		ram_stats = Evaluator.calculate_statistics(ram_data, percentiles, 2)
 
 		return (cpu_stats, ram_stats)
 
