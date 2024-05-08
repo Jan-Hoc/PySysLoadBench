@@ -15,12 +15,12 @@ class Collector:
 	Methods
     -------
     statistics(self):
-        returns the CPU and RAM statistics in a tuple (rounded to two decimal points) 
+        returns the CPU and RAM statistics in a dict ('cpu' and 'ram' as keys, results rounded to two decimal points) 
 		the statistics themselves are in dicts containing the keys
 		- max: maximum
 		- mean: mean
 		- stddev: standard deviation
-		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99]
+		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99] (x as int)
 	"""
 
 	def __init__(self):
@@ -54,26 +54,24 @@ class Collector:
 		self.__ram_queue = None
 		self.__ram_data.append(ram_data)
 
-	def statistics(self) -> tuple:
+	def statistics(self) -> dict:
 		"""returns the CPU and RAM statistics in a tuple (rounded to two decimal points)
 		the statistics themselves are in dicts containing the keys
 		- max: maximum
 		- mean: mean
 		- stddev: standard deviation
-		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99]
+		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99] (x as int)
 
 		Returns:
-			(dict, dict): tuple containing (cpu_stats, ram_stats), which are dicts with the above keys
+			dict: {'cpu', 'ram'}, where values are dicts with the above keys
 		"""
 		percentiles = [25, 50, 75, 90, 95, 99]
 
-		cpu_data = np.array([x for iteration in self.__cpu_data for x in iteration])
-		cpu_stats = Evaluator.calculate_statistics(cpu_data, percentiles, 2)
+		cpu_stats = Evaluator.calculate_statistics(self.__cpu_data, percentiles, 2)
 
-		ram_data = np.array([x for iteration in self.__ram_data for x in iteration])
-		ram_stats = Evaluator.calculate_statistics(ram_data, percentiles, 2)
+		ram_stats = Evaluator.calculate_statistics(self.__ram_data, percentiles, 2)
 
-		return (cpu_stats, ram_stats)
+		return {'cpu': cpu_stats, 'ram': ram_stats}
 
 	def __gather_data(self, pid) -> None:
 		# collect RAM and CPU data and pass to parent process
