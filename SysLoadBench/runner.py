@@ -11,7 +11,7 @@ class DuplicateBenchmark(Exception):
 class BenchmarkNotFound(Exception):
 	pass
 
-class Benchmark:
+class Runner:
 	""" class to run benchmarks and collect results
 
 	Methods
