@@ -1,6 +1,7 @@
-from collector import Collector
-from evaluator import Evaluator
+from .util.collector import Collector
+from .util.evaluator import Evaluator
 from typing import Callable
+from copy import deepcopy
 import time
 import gc
 from prettytable import PrettyTable
@@ -12,7 +13,7 @@ class RunNotFound(Exception):
 	pass
 
 class Run:
-	""" class to run benchmark run and collect results
+	""" class to run benchmark runs and collect results
 
 	Methods
 	-------
@@ -53,10 +54,11 @@ class Run:
 			raise DuplicateRun(f'Run named {name} already exists. Choose a unique name')
 
 		print(f'Starting Run {name}')
-		kwargs = kwargs['kwargs']
+
 		collector = Collector()
 
-		# run setup
+		# run setup		
+		kwargs = kwargs['kwargs']
 		if setup is not None:
 			setup(**kwargs)
 		
@@ -108,7 +110,7 @@ class Run:
 
 		if name not in self.__results:
 			raise RunNotFound(f'Results of run {name} not found')
-		return self.__results[name]
+		return deepcopy(self.__results[name])
 
 	def __print_results(self, name: str) -> None:
 		if name not in self.__results:
