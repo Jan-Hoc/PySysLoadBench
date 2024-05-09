@@ -1,5 +1,5 @@
-from .util.collector import Collector
-from .util.evaluator import Evaluator
+from util.collector import Collector
+from util.evaluator import Evaluator
 from typing import Callable
 from copy import deepcopy
 import time
@@ -33,7 +33,7 @@ class Run:
 	def __init__(self):
 		self.__results = {}
 
-	def benchmark_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=False, **kwargs) -> None:
+	def benchmark_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=True, **kwargs) -> None:
 		"""runs benchmarks for given function benchmark
 
 		Args:
@@ -43,8 +43,9 @@ class Run:
 			prerun (Callable | None, optional): setup function which is run once before every round of run. Defaults to None.
 			rounds (int, optional): Amount of times benchmark should be called to measure for statistic. Defaults to 1.
 			warmup_rounds (int, optional): amount of untracked warmup rounds for benchmark. Defaults to 0.
-			gc_active(bool, optional): enable or disable garbage collection during benchmark. 
+			gc_active(bool, optional): enable or disable garbage collection during benchmark. Defaults to True.
 				Activating gives more "real world" results, while deactivating gives more reproducable results
+			kwargs: arguments passed to setup, prerun and benchmark
 
 		Raises:
 			DuplicateRun: if benchmark with name was already called
