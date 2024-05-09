@@ -84,10 +84,10 @@ class Evaluator:
 			raise NoDataPoints('Empty list of data points given, need at least 1 data point')
 
 		stats = {}
-		stats['max'] = round(np.max(data), precision)
-		stats['mean'] = round(np.mean(data), precision)
-		stats['stddev'] = round(np.std(data), precision)
+		stats['max'] = float(round(np.max(data), precision))
+		stats['mean'] = float(round(np.mean(data), precision))
+		stats['stddev'] = float(round(np.std(data), precision))
 		for p in percentiles:
-			stats[p] = round(np.percentile(data, p), precision)
+			stats[p] = float(round(np.percentile(data, p), precision))
 
 		return stats
