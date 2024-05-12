@@ -23,9 +23,13 @@ class Collector:
 		- x: x'th percentile for x in [25, 50, 75, 90, 95, 99] (x as int)
 	"""
 
-	def __init__(self):
+	def __init__(self, pid: int | None=None):
 		self.__cpu_data = []
 		self.__ram_data = []
+		if pid is None:
+			self.__pid = os.getpid()
+		else:
+			self.__pid = pid
 		self.__running = mp.Value('b', False)
 		self.__measuring_interval = 0.05
 
@@ -33,7 +37,7 @@ class Collector:
 		self.__running.value = True
 		self.__cpu_queue = mp.Queue()
 		self.__ram_queue = mp.Queue()
-		self.__measuring_process = mp.Process(target=self.__gather_data, args=(os.getpid(),))
+		self.__measuring_process = mp.Process(target=self.__gather_data, args=(self.__pid,))
 		self.__measuring_process.start()
 
 	def __exit__(self, exc_type, exc_value, exc_traceback):
