@@ -1,9 +1,12 @@
 from util.collector import Collector
 from util.evaluator import Evaluator
+from pathos import multiprocessing as mp
+from pathos import helpers
 from typing import Callable
 from copy import deepcopy
 import time
 import gc
+import os
 from prettytable import PrettyTable
 
 class DuplicateRun(Exception):
@@ -56,39 +59,48 @@ class Run:
 
 		print(f'Starting Run {name}')
 
-		collector = Collector()
-
-		# run setup		
 		kwargs = kwargs['kwargs']
-		if setup is not None:
-			setup(**kwargs)
-		
-		# run warm up rounds
-		for _ in range(warmup_rounds):
+
+		def startup(kwargs: dict):
+			# run setup		
+			if setup is not None:
+				setup(**kwargs)
+			
+			# run warm up rounds
+			for _ in range(warmup_rounds):
+				if prerun is not None:
+					prerun(**kwargs)
+				benchmark(**kwargs)
+			return os.getpid()
+
+		def run_prerun(kwargs: dict):
 			if prerun is not None:
 				prerun(**kwargs)
-			benchmark(**kwargs)  
 
-		# benchmark actual run
-		times = [None] * rounds
-		for i in range(rounds):
-			if prerun is not None:
-				prerun(**kwargs)
-
-			# do garbage collection before every run for consistency
+		def run_function(kwargs: dict):
 			gc.collect()
 			# disable garbage collection if set to do so
 			if not gc_active:
 				gc.disable()
 
-			with collector:
-				start = time.process_time()
-				benchmark(**kwargs)
-				times[i] = time.process_time() - start
+			start = time.process_time()
+			benchmark(**kwargs)
+			t = time.process_time() - start
 
 			# enable gc after run to return back to normal for prerun function of next round
 			if not gc_active:
 				gc.enable()
+
+			return t
+
+		with mp.ProcessingPool(1) as pool:
+			pid = pool.map(startup, [kwargs])[0]
+			collector = Collector(pid)
+			times = [None] * rounds
+			for i in range(rounds):
+				pool.map(run_prerun, [kwargs])
+				with collector:
+					times[i] = pool.map(run_function, [kwargs])[0]
 
 		self.__results[name] = collector.statistics()
 		self.__results[name]['time'] = {'total': Evaluator.calculate_statistics(times, [25, 50, 75, 90, 95, 99], 4), 'raw': [round(t, 4) for t in times]}
