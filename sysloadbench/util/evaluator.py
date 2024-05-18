@@ -6,7 +6,7 @@ class WrongDimensionality(Exception):
 	pass
 
 class Evaluator:
-	"""Class to offer different methods needed for evaluations
+	"""dlass to offer different methods needed for evaluations
 	
 	Methods
     -------
@@ -19,7 +19,7 @@ class Evaluator:
 	"""
 
 	def calculate_statistics(data: list, percentiles: list=[25, 50, 75, 90, 95, 99], precision: int=2) -> dict:
-		"""Given list of data points, calculate the max, mean, standard deviation (stddev) and percentiles. 
+		"""given list of data points, calculate the max, mean, standard deviation (stddev) and percentiles. 
 		return calculated statistics as a dictionary
 
 		Args:
@@ -65,7 +65,7 @@ class Evaluator:
 		return stats
 
 	def __calc_run(data: list, percentiles: list, precision: int) -> dict:
-		"""Internal helper function to calculate statistics for a single run
+		"""unternal helper function to calculate statistics for a single run
 
 		Args:
 			data (list): 1D list with data points of run

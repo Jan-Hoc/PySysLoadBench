@@ -14,7 +14,7 @@ setup(
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
-        install_requires=['numpy', 'psutil', 'py-cpuinfo', 'pathos', 'prettytable'],
+        install_requires=['numpy', 'psutil', 'py-cpuinfo', 'pathos', 'prettytable', 'matplotlib'],
         
         keywords=['python', 'benchmarking', 'system'],
         classifiers= [
