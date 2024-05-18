@@ -12,11 +12,16 @@ class DuplicateBenchmark(Exception):
 	pass
 
 class Benchmark:
-	"""Class to batch runs into benchmark, save results and handle user interaction
+	"""class to batch runs into benchmark, save results and handle user interaction
 
-	Methods
-	-------
-	TODO
+	Attributes:
+		name (str): name of benchmark
+
+	Methods:
+		add_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=True, **kwargs) -> None: adds a run to the current benchmark
+		run_statistics(self, name: str) -> dict: return statistics of specific run
+		statistics(self) -> dict: return stats of all runs in benchmark
+		get_sysinfo(self) -> dict: return gathered system information
 
 	Raises:
 		DuplicateBenchmark: Is raised if there currently is a benchmark with the same name, must be unique
@@ -37,7 +42,7 @@ class Benchmark:
 		self.save_results()
 
 	def add_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=True, **kwargs) -> None:
-		"""Adds a run to the current benchmark
+		"""adds a run to the current benchmark
 
 		Args:
 			name (str): name of the run, needs to be unique in the benchmark
@@ -91,9 +96,12 @@ class Benchmark:
 	def save_results(self, path: str | Path | None=None) -> None:
 		"""saves results (if any) of benchmark runs into results folder (sysloadbench_results, or given Path)
 		there is a subfolder for every host name in which the benchmark is saved by its name
-		the results are saved in a JSON file
+		the results are saved in a JSON file and corresponding graphs
 		if there are any previous benchmark results at the same location, they will be overwritten
 		this function is also called in the object's __del__ function to avoid having unsaved results
+
+		Args:
+			path (str | Path | None): override default saving location. defaults to None
 		"""
 		# Do not save anything if there are no results
 		if len(self.__runs) == 0:
@@ -113,7 +121,17 @@ class Benchmark:
 		with open(result_file_path, 'w') as result_file: 
 			json.dump(result_data, result_file, indent=4)
 
+		path = path / 'graphs'
+		for run_name in self.__runs:
+			(path / run_name).mkdir(parents=True, exist_ok=True)
+			self.__run.create_graphs(run_name, path / run_name, self.__name)
+
 	def __gather_sysinfo(self) -> dict:
+		"""helper function to gather system information
+
+		Returns:
+			dict: dict containing various gathered system information
+		"""
 		sysinfo = {}
 		sysinfo['python_version'] = platform.python_version()
 		sysinfo['platform'] = platform.platform()

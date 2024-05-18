@@ -1,13 +1,15 @@
 from util.collector import Collector
 from util.evaluator import Evaluator
+from util.illustrator import Illustrator
 from pathos import multiprocessing as mp
-from pathos import helpers
 from typing import Callable
 from copy import deepcopy
 import time
 import gc
 import os
 from prettytable import PrettyTable
+from pathlib import Path
+
 
 class DuplicateRun(Exception):
 	pass
@@ -16,22 +18,11 @@ class RunNotFound(Exception):
 	pass
 
 class Run:
-	""" class to run benchmark runs and collect results
+	"""class to run benchmark runs and collect results
 
-	Methods
-	-------
-	benchmark_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=False, **kwargs):
-		runs benchmarks for function benchmark. Calls setup function once in beginning and prerun before every round of run.
-		runs warmup_rounds rounds for warmup, which are not measured and then measures for rounds rounds
-		prints results to terminal
-		passes kwargs to benchmark, setup and prerun
-		run name must be unique, else raises DuplicateRun exception
-
-	run_statistics(self, name: str):
-		returns result of run name
-		results are dict {'cpu', 'ram', 'time'} with entries in format as Evaluator.calculate_statistics
-			key 'time' only has entry 'total', and additional key 'raw' to see raw times over the different runs
-		if benchmark run with that name wasn't run yet, raises RunNotFound exception
+	Methods:
+		benchmark_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=True, **kwargs) -> None: run benchmark run
+		run_statistics(self, name: str) -> dict: return stats of run		
 	"""
 	def __init__(self):
 		self.__results = {}
@@ -124,6 +115,17 @@ class Run:
 		if name not in self.__results:
 			raise RunNotFound(f'Results of run {name} not found')
 		return deepcopy(self.__results[name])
+
+	def create_graphs(self, name: str, path: Path | str, benchmark_name: str | None=None) -> None:
+		"""given name of run, creates graphs to illustrate results
+
+		Args:
+			name (str): name of run
+			path (Path | str): path where to save results
+			benchmark_name (str | None, optional): name of benchmark of which run is part of. Defaults to None.
+		"""
+		path = Path(path)
+		Illustrator.illustrate_results(self.run_statistics(name), path, benchmark_name, name)
 
 	def __print_results(self, name: str) -> None:
 		if name not in self.__results:
