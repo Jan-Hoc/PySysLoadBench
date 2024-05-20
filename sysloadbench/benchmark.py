@@ -1,4 +1,4 @@
-from run import Run
+from .run import Run
 from copy import deepcopy
 import platform
 import psutil
