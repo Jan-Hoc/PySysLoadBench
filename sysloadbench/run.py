@@ -1,6 +1,6 @@
-from util.collector import Collector
-from util.evaluator import Evaluator
-from util.illustrator import Illustrator
+from .util.collector import Collector
+from .util.evaluator import Evaluator
+from .util.illustrator import Illustrator
 from pathos import multiprocessing as mp
 from typing import Callable
 from copy import deepcopy
