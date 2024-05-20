@@ -50,7 +50,10 @@ class Run:
 
 		print(f'Starting Run {name}')
 
-		kwargs = kwargs['kwargs']
+		if 'kwargs' in kwargs:
+			kwargs = kwargs['kwargs']
+		else:
+			kwargs = {}
 
 		def startup(kwargs: dict):
 			# run setup		
