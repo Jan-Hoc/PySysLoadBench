@@ -38,9 +38,6 @@ class Benchmark:
 		self.__runs = []
 		self.__sysinfo = self.__gather_sysinfo()
 
-	def __del__(self):
-		self.save_results()
-
 	def add_run(self, name: str, benchmark: Callable, setup: Callable | None=None, prerun: Callable | None=None, rounds: int=1, warmup_rounds: int=0, gc_active: bool=True, **kwargs) -> None:
 		"""adds a run to the current benchmark
 

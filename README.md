@@ -112,6 +112,5 @@ b.add_run('Run example_func_2' , example_func_2, example_setup_2, rounds=100, wa
 stats_all = b.statistics()
 
 # save statistics and graphs to Path.cwd() / 'sysloadbench_results'
-# (also gets automatically called on deletion of b)
 b.save_results()
 ```
