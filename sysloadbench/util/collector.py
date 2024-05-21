@@ -1,7 +1,7 @@
 import multiprocessing as mp
-import numpy as np
 import psutil
 import os
+import time
 from .evaluator import Evaluator
 
 class Collector:
@@ -33,11 +33,13 @@ class Collector:
 		self.__running = mp.Value('b', False)
 		self.__measuring_interval = 0.05
 
-	def __enter__(self):
+	def __enter__(self, pid: int | None=None):
 		self.__running.value = True
 		self.__cpu_queue = mp.Queue()
 		self.__ram_queue = mp.Queue()
-		self.__measuring_process = mp.Process(target=self.__gather_data, args=(self.__pid,))
+		if pid is None:
+			pid = self.__pid
+		self.__measuring_process = mp.Process(target=self.__gather_data, args=(pid,))
 		self.__measuring_process.start()
 
 	def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -80,9 +82,31 @@ class Collector:
 	def __gather_data(self, pid) -> None:
 		# collect RAM and CPU data and pass to parent process
 		process = psutil.Process(pid)
+		process_list = [process] + process.children(recursive=True)
+
+		for p in process_list:
+			try:
+				p.cpu_percent()
+			except (psutil.NoSuchProcess, psutil.AccessDenied):
+				continue
+
 		while self.__running.value:
-			self.__cpu_queue.put(process.cpu_percent(self.__measuring_interval))
-			self.__ram_queue.put(process.memory_info().vms)
+			cpu_load = 0
+			ram_load = 0
+			process_list = [process] + process.children(recursive=True)
+
+			for p in process_list:
+				try:
+					cpu_load += p.cpu_percent()
+					ram_load += p.memory_info().vms
+				except (psutil.NoSuchProcess, psutil.AccessDenied):
+					if p == process:
+						self.__running.value = False
+					continue
+
+			self.__cpu_queue.put(cpu_load)
+			self.__ram_queue.put(ram_load)
+			time.sleep(self.__measuring_interval)
 
 		self.__cpu_queue.close()
 		self.__ram_queue.close()

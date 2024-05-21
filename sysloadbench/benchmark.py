@@ -137,7 +137,7 @@ class Benchmark:
 		sysinfo['cpu'] = cpuinfo.get_cpu_info()['brand_raw'] if 'linux' in sysinfo['platform'].lower() else 'not found'
 		try:
 			raw_gpu_res = subprocess.check_output('nvidia-smi -L', shell=True).decode('ascii')
-			sysinfo['gpu'] = '' if 'not found' in raw_gpu_res else raw_gpu_res.split(':', 1)[1].split('(')[0].strip()
+			sysinfo['gpu'] = raw_gpu_res.split(':', 1)[1].split('(')[0].strip() if 'GPU' in raw_gpu_res else ''
 		except:
 			sysinfo['gpu'] = ''
 		sysinfo['ram'] = str(round(psutil.virtual_memory().total / (1024.0**3), 4)) + " GB"

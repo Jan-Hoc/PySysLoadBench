@@ -13,9 +13,9 @@ Benchmarking framework for Python to measure the system load and execution time 
    * [Benchmark Class](#benchmark-class)
 
 ## Overview
-PySysLoadBench is a package, which allows you to benchmark functions with a special focus on system metrics. These include CPU load, RAM utilization. Further, the execution time is measured. Out of these, statistics are generated, such as the mean, max, standard deviation and various percentiles. The CPU and RAM utilization is sampled once every 0.05 seconds.
+PySysLoadBench is a package, which allows you to benchmark functions with a special focus on system metrics. These include CPU load, RAM utilization. Further, the execution time is measured. Out of these, statistics are generated, such as the mean, max, standard deviation and various percentiles. The CPU and RAM utilization is sampled once every 0.05 seconds. CPU and RAM used by child processes, created by your benchmarked function, are also measured.
 
-For additional isolation and more precise results, a new process is created for every run. However the individual rounds in a run are executed in the same process. This allows for imports and defining variables in a setup function, which can be used later. It also allows you to (de-)activate garbage collection, depending on your priorities (see `gc_active` in [Parameters](#parameters)). Garbage collection is also called before the execution of `benchmark` in every round to allow for more reproducible and accurate RAM measurements.
+For additional isolation and more precise results, a new process is created for every run. However, the individual rounds in a run are executed in the same process. This allows for imports and defining global variables in a setup function, which can be used later. It also allows you to (de-)activate garbage collection, depending on your priorities (see `gc_active` in [Parameters](#parameters)). Garbage collection is also called before the execution of `benchmark` in every round to allow for more reproducible and accurate RAM measurements.
 
 ## Usage
 
@@ -52,9 +52,8 @@ The metrics are also displayed in graphs, a seperate graph for timing, CPU load 
 ### Best Practices
 - Do not run other programs on your system during benchmarking to allow for the most accurate results
 - Use `setup` for any initializations which should not be measured and are only needed to be executed once
-- Use `prerun` for any setup or cleanup which should be done for `benchmark`, but should not be measured (e.g. resetting global variables)
-- Sind garbage collection is called before any run of `benchmark`, ensure you delete unused variables in `setup` and `prerun` to profit from more accurate measurements of RAM
-- Do not start other processes in `benchmark`, as these won't be accounted for
+- Use `prerun` for any setup or cleanup which should be done for `benchmark`, but should not be measured (e.g. resetting or initializing global variables)
+- Since garbage collection is called before any run of `benchmark`, ensure you delete unused variables in `setup` and `prerun` to profit from more accurate measurements of RAM
 - Beware that maybe due to caching the first round might take longer than the following. Keep this in mind when deciding to use warmup rounds or not
 - Run the benchmark for multiple rounds to average out potential inconsistencies
 
