@@ -105,13 +105,13 @@ class Benchmark:
 			return
 
 		if path is None:
-			path = Path.cwd() / 'sysloadbench_results'
+			path = Path.cwd() / 'sysloadbench_results' / self.__name
 		if isinstance(path, str):
 			path = Path(path)
 		
 		path = path / self.__sysinfo['host_name']
 		path.mkdir(parents=True, exist_ok=True)
-		result_file_path = path / (self.__name + '.json')
+		result_file_path = path / ('results.json')
 
 		result_data = {'system_information': self.__sysinfo, 'run_results': self.statistics()}
 
