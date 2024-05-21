@@ -4,11 +4,14 @@ from .util.illustrator import Illustrator
 from pathos import pools as pp
 from typing import Callable
 from copy import deepcopy
+from prettytable import PrettyTable
+from pathlib import Path
+import numpy as np
+import psutil
 import time
 import gc
 import os
-from prettytable import PrettyTable
-from pathlib import Path
+
 
 
 class DuplicateRun(Exception):
@@ -58,11 +61,12 @@ class Run:
 		with pp._ProcessPool(1) as pool:
 			pid = pool.starmap(startup, [(benchmark, setup, prerun, warmup_rounds, kwargs)])[0]
 			collector = Collector(pid)
+
 			times = [None] * rounds
 			for i in range(rounds):
 				pool.starmap(run_prerun, [(prerun, kwargs)])
 				with collector:
-					times[i] = pool.starmap(run_function, [(benchmark, rounds, gc_active, kwargs)])[0]
+					times[i] = pool.starmap(run_function, [(benchmark, gc_active, kwargs)])[0]
 
 		self.__results[name] = collector.statistics()
 		self.__results[name]['time'] = {'total': Evaluator.calculate_statistics(times, [25, 50, 75, 90, 95, 99], 4), 'raw': [round(t, 4) for t in times]}
@@ -104,12 +108,17 @@ class Run:
 
 		t = PrettyTable(['System Component', 'Max.', 'Mean', 'Std. Dev.', '25th perc.', '50th perc.', '75th perc.', '90th perc.', '95th perc.', '99th perc.'])
 		t.add_row(['CPU (%) ', *self.__results[name]['cpu']['total'].values()])
-		t.add_row(['RAM (Bytes)', *self.__results[name]['ram']['total'].values()])
+		t.add_row(['RAM (MB)', *(np.round(np.array(list(self.__results[name]['ram']['total'].values())) / 1024**2, 2))])
 		t.add_row(['Time (Seconds)', *self.__results[name]['time']['total'].values()])
 		print(t)
 
 # just some helper functions
 def startup(benchmark, setup, prerun, warmup_rounds, kwargs):
+	# reset cpu affinity which is set by process pool
+	pid = os.getpid()
+	p = psutil.Process(pid)
+	p.cpu_affinity(list(range(psutil.cpu_count())))
+
 	# run setup		
 	if setup is not None:
 		setup(**kwargs)
@@ -119,14 +128,14 @@ def startup(benchmark, setup, prerun, warmup_rounds, kwargs):
 		if prerun is not None:
 			prerun(**kwargs)
 		benchmark(**kwargs)
-	return os.getpid()
+	return pid
 
 def run_prerun(prerun, kwargs):
 	if prerun is not None:
 		prerun(**kwargs)
-
-def run_function(benchmark, rounds, gc_active, kwargs):
 	gc.collect()
+
+def run_function(benchmark, gc_active, kwargs):
 	# disable garbage collection if set to do so
 	if not gc_active:
 		gc.disable()
