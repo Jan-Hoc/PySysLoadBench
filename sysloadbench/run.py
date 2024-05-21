@@ -1,7 +1,7 @@
 from .util.collector import Collector
 from .util.evaluator import Evaluator
 from .util.illustrator import Illustrator
-from pathos import multiprocessing as mp
+from pathos import pools as pp
 from typing import Callable
 from copy import deepcopy
 import time
@@ -55,46 +55,14 @@ class Run:
 		else:
 			kwargs = {}
 
-		def startup(kwargs: dict):
-			# run setup		
-			if setup is not None:
-				setup(**kwargs)
-			
-			# run warm up rounds
-			for _ in range(warmup_rounds):
-				if prerun is not None:
-					prerun(**kwargs)
-				benchmark(**kwargs)
-			return os.getpid()
-
-		def run_prerun(kwargs: dict):
-			if prerun is not None:
-				prerun(**kwargs)
-
-		def run_function(kwargs: dict):
-			gc.collect()
-			# disable garbage collection if set to do so
-			if not gc_active:
-				gc.disable()
-
-			start = time.process_time()
-			benchmark(**kwargs)
-			t = time.process_time() - start
-
-			# enable gc after run to return back to normal for prerun function of next round
-			if not gc_active:
-				gc.enable()
-
-			return t
-
-		with mp.ProcessingPool(1) as pool:
-			pid = pool.map(startup, [kwargs])[0]
+		with pp._ProcessPool(1) as pool:
+			pid = pool.starmap(startup, [(benchmark, setup, prerun, warmup_rounds, kwargs)])[0]
 			collector = Collector(pid)
 			times = [None] * rounds
 			for i in range(rounds):
-				pool.map(run_prerun, [kwargs])
+				pool.starmap(run_prerun, [(prerun, kwargs)])
 				with collector:
-					times[i] = pool.map(run_function, [kwargs])[0]
+					times[i] = pool.starmap(run_function, [(benchmark, rounds, gc_active, kwargs)])[0]
 
 		self.__results[name] = collector.statistics()
 		self.__results[name]['time'] = {'total': Evaluator.calculate_statistics(times, [25, 50, 75, 90, 95, 99], 4), 'raw': [round(t, 4) for t in times]}
@@ -139,3 +107,36 @@ class Run:
 		t.add_row(['RAM (Bytes)', *self.__results[name]['ram']['total'].values()])
 		t.add_row(['Time (Seconds)', *self.__results[name]['time']['total'].values()])
 		print(t)
+
+# just some helper functions
+def startup(benchmark, setup, prerun, warmup_rounds, kwargs):
+	# run setup		
+	if setup is not None:
+		setup(**kwargs)
+	
+	# run warm up rounds
+	for _ in range(warmup_rounds):
+		if prerun is not None:
+			prerun(**kwargs)
+		benchmark(**kwargs)
+	return os.getpid()
+
+def run_prerun(prerun, kwargs):
+	if prerun is not None:
+		prerun(**kwargs)
+
+def run_function(benchmark, rounds, gc_active, kwargs):
+	gc.collect()
+	# disable garbage collection if set to do so
+	if not gc_active:
+		gc.disable()
+
+	start = time.process_time()
+	benchmark(**kwargs)
+	t = time.process_time() - start
+
+	# enable gc after run to return back to normal for prerun function of next round
+	if not gc_active:
+		gc.enable()
+
+	return t
