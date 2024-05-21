@@ -53,11 +53,17 @@ class Collector:
 		while not self.__cpu_queue.empty():
 			cpu_data.append(self.__cpu_queue.get())
 		self.__cpu_queue = None
+
+		if len(cpu_data) == 0:
+			cpu_data = [0]
 		self.__cpu_data.append(cpu_data)
 
 		while not self.__ram_queue.empty():
 			ram_data.append(self.__ram_queue.get())
 		self.__ram_queue = None
+
+		if len(ram_data) == 0:
+			ram_data = [0]
 		self.__ram_data.append(ram_data)
 
 	def statistics(self) -> dict:
