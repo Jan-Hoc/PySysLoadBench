@@ -13,7 +13,7 @@ Benchmarking framework for Python to measure the system load and execution time 
    * [Benchmark Class](#benchmark-class)
 
 ## Overview
-PySysLoadBench is a package, which allows you to benchmark functions with a special focus on system metrics. These include CPU load, RAM utilization. Further, the execution time is measured. Out of these, statistics are generated, such as the mean, max, standard deviation and various percentiles. The CPU and RAM utilization is sampled once every 0.05 seconds. CPU and RAM used by child processes, created by your benchmarked function, are also measured.
+PySysLoadBench is a package, which allows you to benchmark functions with a special focus on system metrics. These include CPU load, RAM utilization. Further, the execution time is measured. Out of these, statistics are generated, such as the mean, max, standard deviation and various percentiles. The CPU and RAM utilization is sampled once every 0.05 seconds. CPU and RAM used by child processes, created by your benchmarked function, are also measured. Due to the sampling interval, the system metrics will not be very accurate, if the benchmarked function runs for too short.
 
 For additional isolation and more precise results, a new process is created for every run. However, the individual rounds in a run are executed in the same process. This allows for imports and defining global variables in a setup function, which can be used later. It also allows you to (de-)activate garbage collection, depending on your priorities (see `gc_active` in [Parameters](#parameters)). Garbage collection is also called before the execution of `benchmark` in every round to allow for more reproducible and accurate RAM measurements.
 
