@@ -85,9 +85,9 @@ class Run:
 			if not gc_active:
 				gc.disable()
 
-			start = time.process_time()
+			start = time.time()
 			benchmark(**kwargs)
-			t = time.process_time() - start
+			t = time.time() - start
 
 			# enable gc after run to return back to normal for prerun function of next round
 			if not gc_active:
