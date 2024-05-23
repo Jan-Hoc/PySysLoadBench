@@ -104,7 +104,7 @@ class Collector:
 			for p in process_list:
 				try:
 					cpu_load += p.cpu_percent()
-					ram_load += p.memory_info().vms
+					ram_load += p.memory_info().rss
 				except (psutil.NoSuchProcess, psutil.AccessDenied):
 					if p == process:
 						self.__running.value = False
