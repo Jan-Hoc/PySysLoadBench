@@ -145,6 +145,6 @@ class Run:
 
 		t = PrettyTable(['System Component', 'Max.', 'Mean', 'Std. Dev.', '25th perc.', '50th perc.', '75th perc.', '90th perc.', '95th perc.', '99th perc.'])
 		t.add_row(['CPU (%) ', *self.__results[name]['cpu']['total'].values()])
-		t.add_row(['RAM (MB)', *(np.round(np.array(list(self.__results[name]['ram']['total'].values())) / 1024**2, 2))])
+		t.add_row(['RAM (MiB)', *(np.round(np.array(list(self.__results[name]['ram']['total'].values())) / 1024**2, 2))])
 		t.add_row(['Time (Seconds)', *self.__results[name]['time']['total'].values()])
 		print(t)
