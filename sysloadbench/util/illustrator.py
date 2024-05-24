@@ -83,7 +83,7 @@ class Illustrator:
 
 		plt.title(graph_title)
 		plt.xlabel('Round')
-		plt.ylabel('Percent' if graph_title == 'CPU Statistics' else 'Megabytes')
+		plt.ylabel('Percent' if graph_title == 'CPU Statistics' else 'Mebibytes')
 
 		plt.plot(x_axis, [stats[i]['mean'] / factor for i in rounds], linestyle='-', label='Mean of Round', color = 'b')
 		plt.fill_between(x_axis, np.array([stats[i]['mean'] / factor for i in rounds]) - stats['total']['stddev'] / factor, np.array([stats[i]['mean'] / factor for i in rounds]) + stats['total']['stddev'] / factor, alpha=.4)
