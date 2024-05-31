@@ -44,7 +44,10 @@ class Collector:
 
 	def __exit__(self, exc_type, exc_value, exc_traceback):
 		self.__running.value = False
-		self.__measuring_process.join()
+		self.__measuring_process.join(self.__measuring_interval * 100)
+
+		if self.__measuring_process.is_alive():
+			self.__measuring_process.terminate()
 
 		# collect data from finished child process
 		cpu_data = []
