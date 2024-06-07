@@ -37,24 +37,22 @@ class Illustrator:
 		if benchmark_name is not None:
 			img_name = benchmark_name + '_' + img_name
 
-		plt.clf()
-		plt.figure(figsize=(8,5), dpi=100)
-		ax = plt.gca()
+		fig, ax = plt.subplots(figsize=(8,5), dpi=300)
 		ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+		ax.set(title='Time Statistics', ylabel='Seconds', xlabel='Round')
 
-		plt.title('Time Statistics')
-		plt.xlabel('Round')
-		plt.ylabel('Seconds')
+		ax.plot(x_axis, time_stats['raw'], linestyle='-', label='Raw Times')
+		ax.fill_between(x_axis, np.array(time_stats['raw']) - time_stats['total']['stddev'], np.array(time_stats['raw']) + time_stats['total']['stddev'], alpha=.4)
+		ax.plot(x_axis, [time_stats['total'][25]] * plot_len, linestyle=':', label='25th Percentile', color='y')
+		ax.plot(x_axis, [time_stats['total']['mean']] * plot_len, linestyle='--', label='Mean', color='m')
+		ax.plot(x_axis, [time_stats['total'][75]] * plot_len, linestyle=':', label='75th Percentile', color='c')
+		ax.plot(x_axis, [time_stats['total']['max']] * plot_len, linestyle='--', label='Maximum Value', color='r')
 
-		plt.plot(x_axis, time_stats['raw'], linestyle='-', label='Raw Times')
-		plt.fill_between(x_axis, np.array(time_stats['raw']) - time_stats['total']['stddev'], np.array(time_stats['raw']) + time_stats['total']['stddev'], alpha=.4)
-		plt.plot(x_axis, [time_stats['total'][25]] * plot_len, linestyle=':', label='25th Percentile', color='y')
-		plt.plot(x_axis, [time_stats['total']['mean']] * plot_len, linestyle='--', label='Mean', color='m')
-		plt.plot(x_axis, [time_stats['total'][75]] * plot_len, linestyle=':', label='75th Percentile', color='c')
-		plt.plot(x_axis, [time_stats['total']['max']] * plot_len, linestyle='--', label='Maximum Value', color='r')
-		plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
-		plt.tight_layout()
-		plt.savefig(path / img_name)
+		ax.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
+		fig.tight_layout()
+		fig.savefig(path / img_name, dpi=300)
+
+		plt.close('all')
 
 	def __data_graph(stats: dict, graph_title: str, path: Path, benchmark_name: str | None=None, run_name: str | None=None) -> None:
 		"""creates a plot for the given RAM and CPU stats as returned by Run under the keys 'cpu' or 'ram' and saves it
@@ -76,25 +74,22 @@ class Illustrator:
 		if benchmark_name is not None:
 			img_name = benchmark_name + '_' + img_name
 
-		plt.clf()
-		plt.figure(figsize=(8,5), dpi=100)
-		ax = plt.gca()
+		fig, ax = plt.subplots(figsize=(8,5), dpi=300)
 		ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+		ax.set(title=graph_title, ylabel='Percent' if graph_title == 'CPU Statistics' else 'Mebibytes', xlabel='Round')
 
-		plt.title(graph_title)
-		plt.xlabel('Round')
-		plt.ylabel('Percent' if graph_title == 'CPU Statistics' else 'Mebibytes')
+		ax.plot(x_axis, [stats[i]['mean'] / factor for i in rounds], linestyle='-', label='Mean of Round', color='b')
+		ax.fill_between(x_axis, np.array([stats[i]['mean'] / factor for i in rounds]) - stats['total']['stddev'] / factor, np.array([stats[i]['mean'] / factor for i in rounds]) + stats['total']['stddev'] / factor, alpha=.4)
+		ax.plot(x_axis, [stats['total']['mean'] / factor] * plot_len, linestyle='--', label='Mean Overall', color='b')
+		ax.plot(x_axis, [stats[i][25] / factor for i in rounds], linestyle='-', label='25th Percentile of Round', color='y')
+		ax.plot(x_axis, [stats['total'][25] / factor] * plot_len, linestyle='--', label='25th Percentile Overall', color='y')
+		ax.plot(x_axis, [stats[i][75] / factor for i in rounds], linestyle='-', label='75th Percentile of Round', color='c')
+		ax.plot(x_axis, [stats['total'][75] / factor] * plot_len, linestyle='--', label='75th Percentile Overall', color='c')
+		ax.plot(x_axis, [stats[i]['max'] / factor for i in rounds], linestyle='-', label='Maximum Value of Round', color='r')
+		ax.plot(x_axis, [stats['total']['max'] / factor] * plot_len, linestyle='--', label='Maximum Value Overall', color='r')
 
-		plt.plot(x_axis, [stats[i]['mean'] / factor for i in rounds], linestyle='-', label='Mean of Round', color = 'b')
-		plt.fill_between(x_axis, np.array([stats[i]['mean'] / factor for i in rounds]) - stats['total']['stddev'] / factor, np.array([stats[i]['mean'] / factor for i in rounds]) + stats['total']['stddev'] / factor, alpha=.4)
-		plt.plot(x_axis, [stats['total']['mean'] / factor] * plot_len, linestyle='--', label='Mean Overall', color = 'b')
-		plt.plot(x_axis, [stats[i][25] / factor for i in rounds], linestyle='-', label='25th Percentile of Round', color='y')
-		plt.plot(x_axis, [stats['total'][25] / factor] * plot_len, linestyle='--', label='25th Percentile Overall', color='y')
-		plt.plot(x_axis, [stats[i][75] / factor for i in rounds], linestyle='-', label='75th Percentile of Round', color='c')
-		plt.plot(x_axis, [stats['total'][75] / factor] * plot_len, linestyle='--', label='75th Percentile Overall', color='c')
-		plt.plot(x_axis, [stats[i]['max'] / factor for i in rounds], linestyle='-', label='Maximum Value of Round', color='r')
-		plt.plot(x_axis, [stats['total']['max'] / factor] * plot_len, linestyle='--', label='Maximum Value Overall', color='r')
+		ax.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
+		fig.tight_layout()
+		fig.savefig(path / img_name)
 
-		plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
-		plt.tight_layout()
-		plt.savefig(path / img_name)
+		plt.close('all')
