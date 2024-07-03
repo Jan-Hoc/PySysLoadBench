@@ -22,7 +22,7 @@ For additional isolation and more precise results, a new process is created for 
 ### Installation
 Install the package using `pip`
 ```
-pip install sysloadbench
+pip install git+ssh://git@github.com/Jan-Hoc/PySysLoadBench.git
 ```
 
 ### Parameters
