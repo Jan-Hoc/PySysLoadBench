@@ -17,6 +17,8 @@ PySysLoadBench is a package, which allows you to benchmark functions with a spec
 
 For additional isolation and more precise results, a new process is created for every run. However, the individual rounds in a run are executed in the same process. This allows for imports and defining global variables in a setup function, which can be used later. It also allows you to (de-)activate garbage collection, depending on your priorities (see `gc_active` in [Parameters](#parameters)). Garbage collection is also called before the execution of `benchmark` in every round to allow for more reproducible and accurate RAM measurements.
 
+Be aware that the processes are created using `spawn` and not `fork`, since forking processes might lead to issues if CUDA is used in the functions which are benchmarked, as well as somewhere in the parent process.
+
 ## Usage
 
 ### Installation

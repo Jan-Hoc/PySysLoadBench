@@ -12,7 +12,10 @@ import time
 import gc
 import os
 
-
+# set starting process to spawn instead of fork
+# otherwise there might be issues with CUDA if used in the benchmark function
+import multiprocess.context as ctx
+ctx._force_start_method('spawn')
 
 class DuplicateRun(Exception):
 	pass
