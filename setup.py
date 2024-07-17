@@ -1,7 +1,7 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 DESCRIPTION = 'PySysLoadBench benchmarks functions for system load'
 LONG_DESCRIPTION = 'PySysLoadBench benchmarks functions for system load including CPU and RAM utilization as well as timing'
 
