@@ -2,6 +2,7 @@ from .util.collector import Collector
 from .util.evaluator import Evaluator
 from .util.illustrator import Illustrator
 from pathos import pools as pp
+import multiprocess as mp
 from typing import Callable
 from copy import deepcopy
 from prettytable import PrettyTable
@@ -12,10 +13,6 @@ import time
 import gc
 import os
 
-# set starting process to spawn instead of fork
-# otherwise there might be issues with CUDA if used in the benchmark function
-import multiprocess.context as ctx
-ctx._force_start_method('spawn')
 
 class DuplicateRun(Exception):
 	pass
@@ -98,7 +95,15 @@ class Run:
 
 			return t
 
+		# set starting process to spawn instead of fork
+		# otherwise there might be issues with CUDA if used in the benchmark function
+		mp.set_start_method('spawn', force=True)
+
 		with pp._ProcessPool(1) as pool:
+			# set start method back to fork since otherwise there might be an explosion
+			# of memory usage if new processes get spawned inside callables
+			mp.set_start_method('fork', force=True)
+
 			pid = pool.apply(startup)
 			collector = Collector(pid)
 
