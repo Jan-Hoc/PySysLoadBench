@@ -73,6 +73,9 @@ class Run:
 				if prerun is not None:
 					prerun(**kwargs)
 				benchmark(**kwargs)
+
+			gc.collect()
+
 			return pid
 
 		def run_prerun():
