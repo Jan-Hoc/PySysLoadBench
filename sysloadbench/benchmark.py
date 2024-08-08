@@ -140,5 +140,5 @@ class Benchmark:
 			sysinfo['gpu'] = raw_gpu_res.split(':', 1)[1].split('(')[0].strip() if 'GPU' in raw_gpu_res else ''
 		except:
 			sysinfo['gpu'] = ''
-		sysinfo['ram'] = str(round(psutil.virtual_memory().total / (1024.0**3), 4)) + " GB"
+		sysinfo['ram'] = str(round(psutil.virtual_memory().total / (1024.0**3), 4)) + " GiB"
 		return sysinfo
