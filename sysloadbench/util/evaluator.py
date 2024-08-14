@@ -56,7 +56,7 @@ class Evaluator:
 			for i, d in enumerate(data):
 				stats[i] = Evaluator.__calc_run(d, percentiles, precision)
 
-			total_data = [x for run in data for x in run]
+			total_data = [run['mean'] for run in list(stats.values)]
 			stats['total'] = Evaluator.__calc_run(total_data, percentiles, precision)
 
 		else:
