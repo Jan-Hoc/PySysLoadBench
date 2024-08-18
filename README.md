@@ -24,7 +24,7 @@ Be aware that the measurement process is created using `spawn` and not `fork`, s
 ### Installation
 Install the package using `pip`
 ```
-pip install git+https://github.com/Jan-Hoc/PySysLoadBench.git@v0.1.0
+pip install git+https://github.com/Jan-Hoc/PySysLoadBench.git
 ```
 
 ### Parameters
